@@ -34,13 +34,13 @@ wlr-layer-shell-unstable-v1-protocol.c:
 
 wlr-layer-shell-unstable-v1-protocol.o: wlr-layer-shell-unstable-v1-protocol.h
 
-wlclock.o: utf8.h xdg-shell-protocol.h wlr-layer-shell-unstable-v1-protocol.h
+labin.o: utf8.h xdg-shell-protocol.h wlr-layer-shell-unstable-v1-protocol.h
 
 # protocol dependencies
-wlclock: xdg-shell-protocol.o wlr-layer-shell-unstable-v1-protocol.o
+labin: xdg-shell-protocol.o wlr-layer-shell-unstable-v1-protocol.o
 
 # library dependencies
-wlclock: CFLAGS+=$(shell pkg-config --cflags wayland-client fcft pixman-1)
-wlclock: LDLIBS+=$(shell pkg-config --libs wayland-client fcft pixman-1) -lrt
+labin: CFLAGS+=$(shell pkg-config --cflags wayland-client fcft pixman-1)
+labin: LDLIBS+=$(shell pkg-config --libs wayland-client fcft pixman-1) -lrt
 
 .PHONY: all clean install
