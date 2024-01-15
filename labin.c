@@ -239,30 +239,29 @@ static void handle_global(void *data, struct wl_registry *registry, uint32_t nam
 
 static const struct wl_registry_listener registry_listener = {.global = handle_global,};
 
-static void read_clock(void) {
-	/* load UNIX date to line buffer */
-  FILE *fp = popen("date", "r");
-
-  while (fgets(line + linerem, 128 - linerem, fp) != NULL) {
-     linerem += strlen(line + linerem);
-  }
-
-  pclose(fp);
+static void read_stdin(void) {
+	/* read data to buffer */
+	ssize_t b = read(STDIN_FILENO, line + linerem, 128 - linerem);
+	if (b == 0) {
+		run_display = 0;
+		return;
+	}
+	linerem += b;
 
 	/* process the lines in the buffer sequentially */
 	char *curline, *end;
 	struct wl_buffer *buffer = NULL;
 
-  for (curline = line; (end = memchr(curline, '\n', linerem)); curline = end) {
-  	*end++ = '\0';
-  	linerem -= end - curline;
+  	for (curline = line; (end = memchr(curline, '\n', linerem)); curline = end) {
+  		*end++ = '\0';
+  		linerem -= end - curline;
 
-  	/* redraw last line when needed */
-  	memcpy(lastline, curline, end - curline);
+  		/* redraw last line when needed */
+  		memcpy(lastline, curline, end - curline);
 
-  	if (!(buffer = draw_frame(lastline)))
-  		continue;
-  }
+  		if (!(buffer = draw_frame(lastline)))
+  			continue;
+  	}
 
 	if (linerem == 128) {
 		/* discard the line when buffer is full */
@@ -286,13 +285,16 @@ static void event_loop(void) {
 	while (run_display) {
 		fd_set rfds;
 		FD_ZERO(&rfds);
+		FD_SET(STDIN_FILENO, &rfds);
 		FD_SET(wlfd, &rfds);
 		wl_display_flush(display);
 
-		read_clock();
+		if (FD_ISSET(STDIN_FILENO, &rfds))
+			read_stdin();
 
 		if (FD_ISSET(wlfd, &rfds))
-			if (wl_display_dispatch(display) == -1) break;
+			if (wl_display_dispatch(display) == -1)
+				break;
 	}
 }
 
