@@ -35,7 +35,6 @@ static struct fcft_font *font;
 static char line[128];
 static char lastline[128];
 static int linerem;
-static bool eat_line = false;
 
 /* foreground text colors */
 static pixman_color_t
@@ -120,7 +119,7 @@ static struct wl_buffer *draw_frame(char *text) {
 	close(fd);
 
 	/* premultiplied colors */
-  pixman_color_t textfgcolor = fgcolor;
+  	pixman_color_t textfgcolor = fgcolor;
 
 	/* Pixman image corresponding to main buffer */
 	pixman_image_t *bar = pixman_image_create_bits(PIXMAN_a8r8g8b8,
@@ -130,7 +129,7 @@ static struct wl_buffer *draw_frame(char *text) {
 	pixman_image_t *background = pixman_image_create_bits(PIXMAN_a8r8g8b8,
 			width, height, NULL, width * 4);
 
-  pixman_image_t *foreground = pixman_image_create_bits(PIXMAN_a8r8g8b8,
+  	pixman_image_t *foreground = pixman_image_create_bits(PIXMAN_a8r8g8b8,
 			width, height, NULL, width * 4);
 
 	pixman_image_t *fgfill = pixman_image_create_solid_fill(&textfgcolor);
@@ -147,7 +146,7 @@ static struct wl_buffer *draw_frame(char *text) {
 		/* return nonzero if more bytes are needed */
 		if (utf8decode(&state, &codepoint, *p)) continue;
 
-    /* rasterize a glyph for a single UTF-32 codepoint */
+    		/* rasterize a glyph for a single UTF-32 codepoint */
 		const struct fcft_glyph *glyph = fcft_rasterize_char_utf32(font, codepoint,
 				FCFT_SUBPIXEL_DEFAULT);
 		if (!glyph) continue;
@@ -159,7 +158,7 @@ static struct wl_buffer *draw_frame(char *text) {
 		xpos += x_kern;
 		lastcp = codepoint;
 
-    /* apply foreground for subpixel rendered text */
+    		/* apply foreground for subpixel rendered text */
  		pixman_image_composite32(
  			PIXMAN_OP_OVER, fgfill, glyph->pix, foreground, 0, 0, 0, 0,
  			xpos + glyph->x, ypos - glyph->y, glyph->width, glyph->height);
@@ -175,7 +174,8 @@ static struct wl_buffer *draw_frame(char *text) {
 		fprintf(stderr, "malformed UTF-8 sequence\n");
 
 	/* make it colorful */
-	int32_t xdraw = (width - maxxpos) / 2;
+	//int32_t xdraw = (width - maxxpos) / 2;
+	int32_t xdraw = width - maxxpos; // right allign
 	pixman_image_composite32(PIXMAN_OP_OVER, background, NULL, bar, 0, 0, 0, 0,
 			xdraw, 0, width, height);
 	pixman_image_composite32(PIXMAN_OP_OVER, foreground, NULL, bar, 0, 0, 0, 0,
@@ -303,7 +303,7 @@ int main(int argc, char **argv) {
 	char *fontstr = "BigBlueTermPlus Nerd Font Mono:size=11";
 	uint32_t layer = ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND;
 //	uint32_t anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP; // *_BOTTOM is also fine
-	uint32_t anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
+	uint32_t anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM |
 			ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT |
 			ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
 
